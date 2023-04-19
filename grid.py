@@ -1,4 +1,4 @@
-
+from collections import deque
 class Grid:
     def __init__(self, width, height):
         self.width = width
@@ -63,50 +63,55 @@ class Grid:
 
         return completed_paths
     
-    def compute_nb_agent(self, path):
-        nb_agent=0
-        #print("PATH dans compute agent", path)
-        for case in path:
-            #print("CASE : ", case)
-            if not self.is_free(case[0], case[1]):
-                nb_agent+=1
-        return nb_agent
+    # def find_shortest_paths(self, start, end, path=[]):
+
+    #     """
+    #     Trouves tout les chemin possible pour arriver au goal SANS contourner les agents
+    #     et trie les chemins en fonction de leur longueur (les plus cours au début)
+    #     """
+        
+    #     x, y = start
+    #     if (x < 0 or x >= self.width or y < 0 or y >= self.height):
+    #         return path
+        
+    #     if (start == end):
+    #         return [path + [end]]
+        
+    #     paths = []
+    #     for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+    #         next_x, next_y = x + dx, y + dy
+    #         if (next_x, next_y) not in path:
+    #             new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
+    #             paths.extend(new_path)
+
+    #     completed_paths = []
+    #     for element in paths:
+    #         if type(element) == list:
+    #             completed_paths.append(element)
+        
+    #     completed_paths.sort(key=len) 
+    #     return completed_paths
     
-    def find_shortest_paths(self, start, end, path=[]):
-
-        """
-        Trouves tout les chemin possible pour arriver au goal SANS contourner les agents
-        et trie les chemins en fonction de leur longueur (les plus cours au début)
-        """
-        #print("path actuel", path)
-        #print("Start :", start)
-        #print("End : ", end)
-        x, y = start
-        if (x < 0 or x >= self.width or y < 0 or y >= self.height):
-            # print("Sortie de la fonction best path")
-            return path
-        
-        if (start == end):
-            #print("start = end")
-            return [path + [end]]
-        
-        paths = []
+    def get_neighbors(self, current):
+        """Retourne les voisins de la case actuelle."""
+        neighbors = []
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            next_x, next_y = x + dx, y + dy
-            if (next_x, next_y) not in path:
-                # print("Ajout d'une case au chemin")    
-                new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
-                paths.extend(new_path)
-
-        #print("paths",paths)
-        completed_paths = []
-        for element in paths:
-            if type(element) == list:
-                nb_agent=self.compute_nb_agent(element)
-                completed_paths.append((element, nb_agent))
-
-        print("completed_paths :", completed_paths)        
-        
-        completed_paths.sort(key=lambda a:(len(a[0]), a[1]) )
-        print("completed_paths sort:",completed_paths)
-        return completed_paths
+            x = current[0] + dx
+            y = current[1] + dy
+            if 0 <= x < self.height and 0 <= y < self.width and self.is_free(x,y):
+                neighbors.append((x, y))
+        return neighbors
+    
+    def shortest_path(self, start, goal):
+        """Retourne le plus court chemin entre start et goal sur la grille."""
+        frontier = [(start, [])]
+        visited = set([start])
+        while frontier:
+            current, path = frontier.pop(0)
+            if current == goal:
+                return path + [current]
+            for neighbor in self.get_neighbors(current):
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    frontier.append((neighbor, path + [current]))
+        return None
