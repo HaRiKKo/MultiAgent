@@ -6,15 +6,29 @@ import random
 
 
 class Agent(threading.Thread):
-    def __init__(self, name, x, y, grid):
+    def __init__(self, name, x, y, goal, grid):
         super().__init__()
         self.name = name
         self.x = x
         self.y = y
+        self.goal = goal
         self.grid = grid
         self.ma_queue = queue.Queue()
         self.stopped = False
         self.start()
+
+    # give the best path (shortest + less agent)
+    def best_path(self, grid):
+        paths = grid.find_shortest_paths((self.x, self.y), self.goal, [])
+        if len(paths)<=0:
+            print(f"L'agent n°{self.name} ne peut pas se déplacer de {(self.x, self.y)} vers {self.goal}.")
+        else:
+            shortest_path = paths[0]
+            shortest_path.pop(0)
+        return shortest_path[0]
+                
+            
+    #def move_to_goal(self, position, goal):
     
     def move(self, dx, dy):
         new_x = self.x + dx
@@ -44,8 +58,6 @@ class Agent(threading.Thread):
             while True: 
                 try:
                     message = self.ma_queue.get(False)  # La thread attend de recevoir un message
-
-
                     
                     if (message.message_type == TypeMessage.BLOCKED):
                         
@@ -65,7 +77,7 @@ class Agent(threading.Thread):
 
     def callback_blocked(self, sender, value):
         print(f"{self.name} : value retourné {value}")
-        if (value):
+        if (value): # A revoir !!!
 
             
             print(f"{self.name} : L'agent {sender.name} m'a répondu pas cool, je vais lui dire qu'il est po gentil")
