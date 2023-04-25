@@ -6,11 +6,10 @@ import random
 
 
 class Agent(threading.Thread):
-    def __init__(self, name, x, y, goal, grid):
+    def __init__(self, name, position, goal, grid):
         super().__init__()
         self.name = name
-        self.x = x
-        self.y = y
+        self.position = position
         self.goal = goal
         self.grid = grid
         self.ma_queue = queue.Queue()
@@ -19,24 +18,30 @@ class Agent(threading.Thread):
 
     # give the best path (shortest + less agent)
     def best_path(self, grid):
-        paths = grid.find_shortest_paths((self.x, self.y), self.goal, [])
-        if len(paths)<=0:
-            print(f"L'agent n°{self.name} ne peut pas se déplacer de {(self.x, self.y)} vers {self.goal}.")
-        else:
-            shortest_path = paths[0]
-            shortest_path.pop(0)
-        return shortest_path[0]
+        paths = grid.find_shortest_paths(self.position, self.goal, []) #recupère la liste des chemins les plus courts
+        print("list des chemins", paths)
+        if len(paths)<=0: #si pas de chemin trouver
+            print(f"L'agent n°{self.name} ne peut pas se déplacer de {self.position} vers {self.goal}.")
+            return -1
+        else: #sinon on calcule le nombre d'agent par chemin et on trie les chemins pour récupérer le chemin le moins d'agent
+            dict_paths = {}
+            for i in range(len(paths)): #calcule du nombre d'agent
+                dict_paths[i] = grid.compute_agent_in_path(paths[i])
+            sorted_dict = sorted(dict_paths.items(), key=lambda item: item[1])
+            shortest_path = paths[sorted_dict[0][0]]
+            shortest_path.pop(0) #On enlève le première element du chemin car c'est la position actuelle
+            return shortest_path
                 
             
     #def move_to_goal(self, position, goal):
     
     def move(self, dx, dy):
-        new_x = self.x + dx
-        new_y = self.y + dy
+        new_x = self.position[0] + dx
+        new_y = self.position[1] + dy
         if self.grid.is_valid(new_x, new_y):
             if self.grid.is_free(new_x, new_y):
-                self.x = new_x
-                self.y = new_y
+                self.position[0] = new_x
+                self.position[1] = new_y
             else:
                 other_agent = self.grid.get_agent(new_x, new_y)
                 print(f"{self.name} : Agent bloqué par {other_agent.name}")
