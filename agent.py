@@ -20,6 +20,19 @@ class Agent(threading.Thread):
 
     def is_goal(self):
         return self.position == self.goal
+    
+    def get_neighbors(self):
+        """
+        Retourne les voisins de la case actuelle.
+        """
+
+        neighbors = []
+        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            x = self.position[0] + dx
+            y = self.position[1] + dy
+            if 0 <= x < self.grid.height and 0 <= y < self.grid.width:
+                neighbors.append((x, y))
+        return neighbors
 
     # give the best path (shortest + less agent)
     def best_path(self, grid):
@@ -83,6 +96,17 @@ class Agent(threading.Thread):
                             message.response(True) 
                         else:
                             print(f"{self.name} : peut bouger")
+                            neighbors = self.get_neighbors()
+                            print(f"{self.name}: mes voisins : {neighbors} ")
+                            for neighbor in neighbors:
+                                if self.grid.is_free(neighbor[0], neighbor[1]):
+                                    dx=neighbor[0]-self.position[0]
+                                    dy=neighbor[1]-self.position[1]
+                                    self.move(dx, dy)
+                                    break
+                            
+                            #self.send_message(Message(TypeMessage.BLOCKED, self.callback_blocked), neighbors[0])
+
                             message.response(False) 
                         # si l'agent est déjà à son goal => ne pas bouger // sinon bouger 
                     
@@ -110,8 +134,16 @@ class Agent(threading.Thread):
             print(f"{self.name} : L'agent {sender.name} m'a répondu pas cool, je vais lui dire qu'il est po gentil")
             self.send_message(Message(TypeMessage.PASGENTIL, None), sender)
         """
-        #self.resolve_agent()
-        self.event.set()
+        if value: # si l'agent ne bouge PAS
+            self.resolve_agent()
+            print("_________________TESTESTESTEST_____________________")
+        if not value: # si l'agent bouge 
+            best_path=self.best_path(self.grid)
+            next=best_path[0]
+            dx = next[0]-self.position[0]
+            dy = next[1]-self.position[1]
+            self.move(dx, dy)
+            self.event.set()
     
     def resolve_agent(self):
         print("resolve agent", self.name)
@@ -123,4 +155,6 @@ class Agent(threading.Thread):
             ret=self.move(dx, dy)
             if ret == -1:
                 self.event.wait()
+            
+                
 

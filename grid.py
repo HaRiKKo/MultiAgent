@@ -118,19 +118,6 @@ class Grid:
 
         return shortest_payhs
     
-    def get_neighbors(self, current):
-        """
-        Retourne les voisins de la case actuelle.
-        """
-
-        neighbors = []
-        for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-            x = current[0] + dx
-            y = current[1] + dy
-            if 0 <= x < self.height and 0 <= y < self.width:
-                neighbors.append((x, y))
-        return neighbors
-    
     def resolve_grid(self):
         # résolutionligne par ligne
         for i in range(self.height-2):
@@ -142,20 +129,3 @@ class Grid:
             for agent in self.agents:
                 if agent.goal[0]==i and not agent.is_goal():
                     agent.resolve_agent()
-    
-    def shortest_path(self, start, goal):
-        """
-        Retourne le plus court chemin entre start et goal sur la grille.
-        """
-
-        frontier = [(start, [])]
-        visited = set([start])
-        while frontier:
-            current, path = frontier.pop(0)
-            if current == goal:
-                return path + [current]
-            for neighbor in self.get_neighbors(current):
-                if neighbor not in visited:
-                    visited.add(neighbor)
-                    frontier.append((neighbor, path + [current]))
-        return None
