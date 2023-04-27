@@ -102,7 +102,7 @@ class Agent(threading.Thread):
                                 self.steppedAway=False
                                 message.response(False)
                             else :
-                                print(f"{s.name} : Ne peut pas se déplacer, s'est déjà éloigné de son objectif")
+                                print(f"{self.name} : Ne peut pas se déplacer, s'est déjà éloigné de son objectif")
                                 message.response(True) 
                         # Vérifier s'il est possible de se décaler d'une case
                         # Si une case est libre -> se déplace
@@ -134,7 +134,7 @@ class Agent(threading.Thread):
                                 for agent in agents_neighbors:
                                     neighbors_is_goal.append(agent.is_goal())
                                 if False in neighbors_is_goal: # Il y a un voisin qui n'est pas à sa position finale
-                                    # On demande à ce voisin de se (me) pousser par la ffffff
+                                    # On demande à ce voisin de se pousser 
                                     neighbor_to_move = agents_neighbors[neighbors_is_goal.index(False)] # UN Agent qui n'est pas encore à sa position finale
                                     position_desiree = neighbor_to_move.position
                                     print(f"{self.name} : Demande à {neighbor_to_move.name} de se déplacer car il n'est pas à son objectif")
@@ -296,7 +296,7 @@ class Agent(threading.Thread):
             # On remet les agents déplacés dans leurs objectifs :windowjump:
             for agent in self.grid.agents:
                 if agent.steppedAway:
-                    print(f"{agent} est remis sur le droit chemin après avoir été déplacé")
+                    print(f"{agent.name} est remis sur le droit chemin après avoir été déplacé")
                     agent.resolve_agent()
             self.event.set()
     

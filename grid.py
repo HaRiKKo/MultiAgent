@@ -120,10 +120,15 @@ class Grid:
         for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
             next_x, next_y = x + dx, y + dy
             if (next_x, next_y) not in path:
-                # si il y a un agent qui est blocké => on le contourne
-                if self.is_free(next_x, next_y) or not self.get_agent(next_x, next_y).steppedAway: # get_agent marche seulement s'il y a un agent !!!
+                # si il y a un agent qui est blocké => on le contourne pas comme la fenetre, là on plonge !
+                if (self.is_free(next_x, next_y)) : # get_agent marche seulement s'il y a un agent !!!
                     new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
                     paths.extend(new_path)
+                elif self.get_agent(next_x, next_y) != None:
+                    if not self.get_agent(next_x, next_y).steppedAway:
+                        new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
+                        paths.extend(new_path)
+
                 
         completed_paths = []
         for element in paths:
