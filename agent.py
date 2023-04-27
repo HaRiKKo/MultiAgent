@@ -58,6 +58,8 @@ class Agent(threading.Thread):
             if self.grid.is_free(new_x, new_y):
                 print(f"{self.name} se déplace de {self.position} à {(new_x, new_y)}")
                 self.position = (new_x, new_y)
+                if self.is_goal:
+                    print(f"{self.name} arrivé à la case objectif")
             else:
                 other_agent = self.grid.get_agent(new_x, new_y)
                 print(f"{self.name} bloqué par {other_agent.name} en position {other_agent.position}")
@@ -146,7 +148,8 @@ class Agent(threading.Thread):
             self.event.set()
         """
         self.resolve_agent()
-        self.event.set()
+        if self.is_goal():
+            self.event.set()
     
     def resolve_agent(self):
         print("\nResolve agent", self.name)
@@ -157,6 +160,7 @@ class Agent(threading.Thread):
             dy = case[1]-self.position[1]
             ret=self.move(dx, dy)
             if ret == -1:
+                print("Sortie de resolve agent par erreur -1")
                 break
             if ret == -2:
                 print("Erreur mouvement impossible !!!")
