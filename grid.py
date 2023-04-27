@@ -124,6 +124,7 @@ class Grid:
             for agent in self.agents:
                 if agent.goal[1]==i and not agent.is_goal():
                     agent.resolve_agent()
+                    agent.event.wait()
         # résolution colomne par colomne 
         for i in range(self.width):
             for agent in self.agents:

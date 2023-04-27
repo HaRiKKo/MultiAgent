@@ -133,7 +133,7 @@ class Agent(threading.Thread):
         if (value): # A revoir !!!
             print(f"{self.name} : L'agent {sender.name} m'a répondu pas cool, je vais lui dire qu'il est po gentil")
             self.send_message(Message(TypeMessage.PASGENTIL, None), sender)
-        """
+        
         if value: # si l'agent ne bouge PAS
             self.resolve_agent()
             print("_________________TESTESTESTEST_____________________")
@@ -144,6 +144,9 @@ class Agent(threading.Thread):
             dy = next[1]-self.position[1]
             self.move(dx, dy)
             self.event.set()
+        """
+        self.resolve_agent()
+        self.event.set()
     
     def resolve_agent(self):
         print("resolve agent", self.name)
@@ -154,7 +157,10 @@ class Agent(threading.Thread):
             dy = case[1]-self.position[1]
             ret=self.move(dx, dy)
             if ret == -1:
-                self.event.wait()
+                break
+            if ret == -2:
+                print("Erreur mouvement impossible !!!")
+                break
             
                 
 
