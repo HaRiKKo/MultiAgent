@@ -35,14 +35,12 @@ class Agent(threading.Thread):
         return neighbors
 
     # give the best path (shortest + less agent)
-
-    #TODO Si pas de best path => Message d'erreur / fin du jeux / jeux impossible !
     def best_path(self, grid):
         paths = grid.find_shortest_paths(self.position, self.goal, []) #recupère la liste des chemins les plus courts
         #print("list des chemins", paths)
         if len(paths)<=0: #si pas de chemin trouver
             print(f"L'agent n°{self.name} ne peut pas se déplacer de {self.position} vers {self.goal}.")
-            return -1 # HERE Message d'érreur !
+            return -1 
         else: #sinon on calcule le nombre d'agent par chemin et on trie les chemins pour récupérer le chemin le moins d'agent
             dict_paths = {}
             for i in range(len(paths)): #calcule du nombre d'agent
@@ -163,22 +161,6 @@ class Agent(threading.Thread):
 
     def callback_blocked(self, sender, value):
         print(f"{self.name} : value retourné {value}")
-        """
-        if (value): # A revoir !!!
-            print(f"{self.name} : L'agent {sender.name} m'a répondu pas cool, je vais lui dire qu'il est po gentil")
-            self.send_message(Message(TypeMessage.PASGENTIL, None), sender)
-        
-        if value: # si l'agent ne bouge PAS
-            self.resolve_agent()
-            print("_________________TESTESTESTEST_____________________")
-        if not value: # si l'agent bouge 
-            best_path=self.best_path(self.grid)
-            next=best_path[0]
-            dx = next[0]-self.position[0]
-            dy = next[1]-self.position[1]
-            self.move(dx, dy)
-            self.event.set()
-        """
         self.resolve_agent()
         if self.is_goal():
             self.event.set()
@@ -187,16 +169,21 @@ class Agent(threading.Thread):
         print("\nResolve agent", self.name)
         best_path=self.best_path(self.grid)
         print("-> Son meilleur chemin :", best_path)
-        for case in best_path:
-            dx = case[0]-self.position[0]
-            dy = case[1]-self.position[1]
-            ret=self.move(dx, dy)
-            if ret == -1:
-                print("Sortie de resolve agent par erreur -1")
-                break
-            if ret == -2:
-                print("Erreur mouvement impossible !!!")
-                break
+        if best_path == -1:
+            print("La position finale n'est pas accessible, arrêt prématuré du jeu")
+            self.grid.stop()
+        else:
+            for case in best_path:
+                dx = case[0]-self.position[0]
+                dy = case[1]-self.position[1]
+                ret=self.move(dx, dy)
+                if ret == -1:
+                    print("Sortie de resolve agent par erreur -1")
+                    break
+                if ret == -2:
+                    print("Erreur mouvement impossible !!!")
+                    break
+            
             
                 
 
