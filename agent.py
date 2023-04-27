@@ -56,11 +56,11 @@ class Agent(threading.Thread):
         
         if self.grid.is_valid(new_x, new_y):
             if self.grid.is_free(new_x, new_y):
-                print(f"{self.name} se déplasse de {self.position} à {(new_x, new_y)}")
+                print(f"{self.name} se déplace de {self.position} à {(new_x, new_y)}")
                 self.position = (new_x, new_y)
             else:
                 other_agent = self.grid.get_agent(new_x, new_y)
-                print(f"{self.name} bloqué par {other_agent.name}")
+                print(f"{self.name} bloqué par {other_agent.name} en position {other_agent.position}")
                 self.event.clear()
                 self.send_message(Message(TypeMessage.BLOCKED, self.callback_blocked), other_agent)
                 return -1 #erreur blocké
@@ -87,17 +87,17 @@ class Agent(threading.Thread):
                     
                     if (message.message_type == TypeMessage.BLOCKED): # si tu es un agent qui block 
                         
-                        print(f"{self.name} : L'agent {message.sender.name} est bloqué, je vais lui répondre")
+                        print(f"{self.name} : {message.sender.name} est bloqué, je vais lui répondre")
                         #message.response(bool(random.getrandbits(1)))# vrai code
                         if self.is_goal():
                             print(f"{self.name} : ne peut PAS bouger")
-                            print(f"{self.position} position actuelle //{self.goal} objectif")
+                            print(f"{self.position} position actuelle // {self.goal} objectif")
                             self.isBlock=True # Je suis blocké 
                             message.response(True) 
                         else:
                             print(f"{self.name} : peut bouger")
                             neighbors = self.get_neighbors()
-                            print(f"{self.name}: mes voisins : {neighbors} ")
+                            print(f"{self.name} : mes voisins : {neighbors} ")
                             for neighbor in neighbors:
                                 if self.grid.is_free(neighbor[0], neighbor[1]):
                                     dx=neighbor[0]-self.position[0]
@@ -121,7 +121,7 @@ class Agent(threading.Thread):
                 except queue.Empty:
                     break
 
-            print(f"{self.name} : boucle update")
+            # print(f"{self.name} : boucle update")
             
             time.sleep(1)# évite de surcharger le cpu !
             if (self.stopped):
@@ -146,9 +146,9 @@ class Agent(threading.Thread):
             self.event.set()
     
     def resolve_agent(self):
-        print("resolve agent", self.name)
+        print("\nResolve agent", self.name)
         best_path=self.best_path(self.grid)
-        print("son meilleur chemin:", best_path)
+        print("-> Son meilleur chemin :", best_path)
         for case in best_path:
             dx = case[0]-self.position[0]
             dy = case[1]-self.position[1]

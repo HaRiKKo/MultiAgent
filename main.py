@@ -9,6 +9,7 @@ les réordonner colonne par colonne en commençant par celle de gauche.
 
 from agent import Agent
 from grid import Grid
+import time
 
 grid = Grid(5, 5)
 
@@ -30,5 +31,5 @@ grid.resolve_grid()
 #print("\n plus court chemin:", agent1.best_path(grid))
 #print("\nListe de Chemin pour aller de (0,0) à (3,2) :\n", grid.find_available_paths((0,0), (3,2)))
 #print("\nChemin plus court pour aller de (0,0) à (3,2) :\n", grid.find_shortest_paths((0,0), (3,2)))
-
+time.sleep(6)
 grid.stop()
