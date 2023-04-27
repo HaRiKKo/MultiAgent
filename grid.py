@@ -98,7 +98,7 @@ class Grid:
             next_x, next_y = x + dx, y + dy
             if (next_x, next_y) not in path:
                 # si il y a un agent qui est blocké => on le contourne
-                if self.is_free(next_x, next_y) or not self.get_agent(next_x, next_y).isBlock:
+                if self.is_free(next_x, next_y) or not self.get_agent(next_x, next_y).isBlock: # get_agent marche seulement s'il y a un agent !!!
                     new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
                     paths.extend(new_path)
                 
@@ -120,13 +120,22 @@ class Grid:
     
     def resolve_grid(self):
         # résolutionligne par ligne
+        print("\n1er Etape : Résolution ligne par ligne\n")
         for i in range(self.height-2):
             for agent in self.agents:
                 if agent.goal[1]==i and not agent.is_goal():
                     agent.resolve_agent()
-                    agent.event.wait()
+                    #print("avant le wait !")
+                    if not agent.is_goal():
+                        agent.event.wait()
+
         # résolution colomne par colomne 
+        print("\n2eme Etape : Résolution colomne par colomne\n")
         for i in range(self.width):
             for agent in self.agents:
                 if agent.goal[0]==i and not agent.is_goal():
                     agent.resolve_agent()
+                    if not agent.is_goal():
+                        agent.event.wait()
+        print("\nFin du tacquin ! Tous les agents sont placé !\n")
+        
