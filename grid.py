@@ -1,17 +1,38 @@
 from collections import deque
+import random
+
+from agent import Agent
+
 class Grid:
     def __init__(self, width, height):
         self.width = width
         self.height = height
         self.agents = []
         self.name = "Grid"
-        
+
+    def init_grid(self, nb_agents):
+        init=True
+        num_agent=0
+        while init:
+            position_desiree = (random.randint(0,self.height-1), random.randint(0, self.width-1)) # recherche d'une position
+            if self.is_free(position_desiree[0], position_desiree[1]):
+                agent = Agent("Agent "+str(num_agent+1), position_desiree, self.position_finale(num_agent), self)
+                self.add_agent(agent)
+                num_agent += 1
+            if num_agent >= nb_agents or num_agent >= self.height*self.width:
+                init=False
+
+    def position_finale(self, num_agent):
+        x = num_agent % self.width
+        y = num_agent // self.height
+        return (x,y)
+    
     def add_agent(self, agent):
         if self.is_valid(agent.position[0], agent.position[1]) and self.is_free(agent.position[0], agent.position[1]):
             self.agents.append(agent)
             agent.grid = self
             agent.start = {}
-            print(f"Agent {agent.name} a été rajouter à la grille {self.name}")
+            print(f"Agent {agent.name} a été rajouter à la grille {self.name}\n  Position de départ : {agent.position}\n  Position d'arrivée : {agent.goal}")
         else:
             raise ValueError(f"Position invalide pour {agent.name}")
     
@@ -73,10 +94,12 @@ class Grid:
 
         return completed_paths
     
-    def compute_agent_in_path(self, path):
-        cpt=-1
+    def compute_agent_in_goal(self, path):
+        cpt=0
         for case in path:
-            if not self.is_free(case[0], case[1]):
+            # if not self.is_free(case[0], case[1]):
+            potential_agent = self.get_agent(case[0], case[1])
+            if potential_agent != None and potential_agent.is_goal():
                 cpt+=1
         return cpt
                 
@@ -98,7 +121,7 @@ class Grid:
             next_x, next_y = x + dx, y + dy
             if (next_x, next_y) not in path:
                 # si il y a un agent qui est blocké => on le contourne
-                if self.is_free(next_x, next_y) or not self.get_agent(next_x, next_y).isBlock: # get_agent marche seulement s'il y a un agent !!!
+                if self.is_free(next_x, next_y) or not self.get_agent(next_x, next_y).steppedAway: # get_agent marche seulement s'il y a un agent !!!
                     new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
                     paths.extend(new_path)
                 
@@ -138,4 +161,6 @@ class Grid:
                     if not agent.is_goal():
                         agent.event.wait()
         print("\nFin du tacquin ! Tous les agents sont placé !\n")
-        
+
+
+                

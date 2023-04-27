@@ -10,9 +10,15 @@ les réordonner colonne par colonne en commençant par celle de gauche.
 from agent import Agent
 from grid import Grid
 import time
+import random
 
 grid = Grid(5, 5)
 #coordonnée : (colonne, ligne)
+nb_agents = 10 
+grid.init_grid(nb_agents)
+
+
+"""
 agent1 = Agent("Agent 1", (0,0), (0,2), grid)
 agent2 = Agent("Agent 2", (0,1), (0,1), grid)
 agent3 = Agent("Agent 3", (1,1), (3,3), grid)
@@ -35,6 +41,7 @@ grid.add_agent(agent7)
 grid.add_agent(agent8)
 grid.add_agent(agent9)
 grid.add_agent(agent10)
+"""
 
 grid.resolve_grid()
 
