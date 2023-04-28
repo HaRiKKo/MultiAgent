@@ -59,7 +59,7 @@ class Grid:
     #     self.agents[agent.position] = agent
     
     def broadcast_message(self, sender, message, receiver):
-        print(f"Broadcast d'un message:\n sender={sender.name} \n receiver={receiver.name}")
+        print(f"Broadcast d'un message:\n sender={sender.name} \n receiver={receiver.name}\n")
         message.sender = sender
         message.receiver = receiver
         receiver.receive_message(message)
@@ -99,8 +99,10 @@ class Grid:
         for case in path:
             # if not self.is_free(case[0], case[1]):
             potential_agent = self.get_agent(case[0], case[1])
-            if potential_agent != None and potential_agent.is_goal():
+            if potential_agent != None:
                 cpt+=1
+                if potential_agent.is_goal():
+                    cpt+=1
         return cpt
                 
     def find_shortest_paths(self, start, end, path=[]):
@@ -121,7 +123,7 @@ class Grid:
             next_x, next_y = x + dx, y + dy
             if (next_x, next_y) not in path:
                 # si il y a un agent qui est blocké => on le contourne pas comme la fenetre, là on plonge !
-                if (self.is_free(next_x, next_y)) : # get_agent marche seulement s'il y a un agent !!!
+                if (self.is_free(next_x, next_y)) :
                     new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
                     paths.extend(new_path)
                 elif self.get_agent(next_x, next_y) != None:
@@ -148,7 +150,7 @@ class Grid:
     
     def resolve_grid(self):
         # résolutionligne par ligne
-        print("\n1er Etape : Résolution ligne par ligne\n")
+        # print("\n1er Etape : Résolution ligne par ligne\n")
         for i in range(self.height-2):
             for agent in self.agents:
                 if agent.goal[1]==i and not agent.is_goal():
@@ -158,7 +160,7 @@ class Grid:
                         agent.event.wait()
 
         # résolution colomne par colomne 
-        print("\n2eme Etape : Résolution colomne par colomne\n")
+        # print("\n2eme Etape : Résolution colomne par colomne\n")
         for i in range(self.width):
             for agent in self.agents:
                 if agent.goal[0]==i and not agent.is_goal():
