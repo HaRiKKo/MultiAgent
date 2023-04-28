@@ -39,11 +39,9 @@ class Agent(threading.Thread):
     def best_path(self, grid):
         # determination du chemin a prendre !
         if len(grid.find_available_paths(self.position,self.goal)) == 0:
-            print("Best path\n")
             paths = grid.find_shortest_paths(self.position,self.goal)
-            #print("list des chemins", paths)
             if len(paths)<=0: #si pas de chemin trouver
-                print(f"{self.name} ne peut pas se déplacer de {self.position} vers {self.goal}.")
+                print(f"{self.name} : ne peut pas se déplacer de {self.position} vers {self.goal}.")
                 return -1 
             else: #sinon on calcule le nombre d'agent par chemin et on trie les chemins pour récupérer le chemin le moins d'agent
                 dict_paths = {}
@@ -54,7 +52,6 @@ class Agent(threading.Thread):
                 shortest_path.pop(0) #On enlève le première element du chemin car c'est la position actuelle
                 path = shortest_path     
         else:
-            print("Available path\n")
             path = grid.find_available_paths(self.position,self.goal)[0]
             path.pop(0)
         return path
@@ -67,17 +64,17 @@ class Agent(threading.Thread):
         
         if self.grid.is_valid(new_x, new_y):
             if self.grid.is_free(new_x, new_y):
-                print(f"{self.name} se déplace de {self.position} à {(new_x, new_y)}")
+                print(f"{self.name} : {self.position} -> {(new_x, new_y)}")
                 self.position = (new_x, new_y)
                 if self.is_goal():
-                    print(f"{self.name} arrivé à la case objectif")
+                    print(f"{self.name} : arrivé à la case objectif")
                     self.steppedAway = False
             else:
                 other_agent = self.grid.get_agent(new_x, new_y)
-                print(f"{self.name} bloqué par {other_agent.name} en position {other_agent.position}")
+                print(f"{self.name} : bloqué par {other_agent.name} en position {other_agent.position}")
                 self.event.clear()
                 self.send_message(Message(TypeMessage.BLOCKED, self.callback_blocked), other_agent)
-                return -1 #erreur blocké
+                return -1 # erreur bloqué
         else:
             print(f"{self.name} : Mouvement impossible en ({new_x}, {new_y})")
             return -2 #erreur position
@@ -88,7 +85,6 @@ class Agent(threading.Thread):
         self.grid.broadcast_message(self, message, receiver)
     
     def receive_message(self, message):
-        print("Un message a été mis dans la queue de l'agent ", self.name)
         self.ma_queue.put(message)
 
     def stop(self):
@@ -100,12 +96,10 @@ class Agent(threading.Thread):
                 try:
                     message = self.ma_queue.get(False)  # La thread attend de recevoir un message
                     
-                    if (message.message_type == TypeMessage.BLOCKED): # si tu es un agent qui block 
+                    if (message.message_type == TypeMessage.BLOCKED):
                         
                         print(f"{self.name} : {message.sender.name} est bloqué, je vais lui répondre")
-                        #message.response(bool(random.getrandbits(1)))# vrai code
                         if self.steppedAway:
-                            print(f"Le stepped away est activé pour {self.name}")
                             if self.grid.is_free(self.goal[0], self.goal[1]):
                                 dx=self.goal[0]-self.position[0]
                                 dy=self.goal[1]-self.position[1]
@@ -122,22 +116,23 @@ class Agent(threading.Thread):
                         # Si une case est libre -> se déplace
                         # Si non -> demande à un voisin de se déplacer
                         else:
-                            print(f"Le stepped away est désactivé pour {self.name}")
                             # on récupère les voisins et on supprime le sender et son objectif si il fait partie des voisins 
                             neighbors = self.get_neighbors()
                             if message.sender.position in neighbors:
                                 neighbors.remove(message.sender.position)
                             if message.sender.goal in neighbors:
                                 neighbors.remove(message.sender.goal)
-
+                            if len(neighbors)==0:
+                                message.response(True)
+                                break
                             print(f"{self.name} : mes voisins : {neighbors} ")
                             libre = False # aucune case voisin libre de trouvée
                             for neighbor in neighbors:
                                 if self.grid.is_free(neighbor[0], neighbor[1]):
                                     libre = True # trouvée une case voisin libre
-                                    print(f"{self.name} a trouvé une case voisine libre en ", neighbor)
+                                    print(f"{self.name} : a trouvé une case voisine libre en ", neighbor)
                                     if self.is_goal():
-                                        print(f"{self.name} est à sa position objectif mais bouge d'une case.")
+                                        print(f"{self.name} : est à sa position objectif mais bouge d'une case.")
                                         self.steppedAway=True
                                     dx=neighbor[0]-self.position[0]
                                     dy=neighbor[1]-self.position[1]
@@ -145,7 +140,7 @@ class Agent(threading.Thread):
                                     break
                             if not libre:
                                 arret = True
-                                print(f"Toutes les cases voisines de l'{self.name} sont occupées...")
+                                print(f"Toutes les cases voisines de {self.name} sont occupées...")
                                 # Envoie un message à un voisin pour qu'il se déplace
                                 agents_neighbors = [] # Liste des agents voisins à partir des cases voisines
                                 for position_agent in neighbors:
@@ -163,14 +158,14 @@ class Agent(threading.Thread):
                                         self.send_message(Message(TypeMessage.BLOCKED, self.set_event), neighbor_to_move)
                                         self.event.wait()
                                         if self.grid.is_free(position_desiree[0], position_desiree[1]): # On entre ici si l'agent à qui on a fait une demande s'est déplacé
-                                            print(f"L'{neighbor_to_move.name} a bien voulu se déplacer, je peux bouger vers la case {position_desiree}")
+                                            print(f"{self.name} : {neighbor_to_move.name} s'est déplacé, je peux bouger vers la case {position_desiree}")
                                             arret = False
                                             dx=position_desiree[0]-self.position[0]
                                             dy=position_desiree[1]-self.position[1]
                                             self.move(dx, dy)
                                             break
                                 if not False in neighbors_is_goal : # Tous les voisins sont à leur position finale
-                                    # On en choisi celui qui a un numéro plus grand = GOAL le + en bas à droite)
+                                    # On en choisi celui qui a un numéro plus grand = GOAL le + en bas à droite
                                     positions_agents = [agent.position[1] for agent in agents_neighbors]
                                     index = positions_agents.index(max(positions_agents))
                                     neighbor_to_move = agents_neighbors[index]
@@ -179,146 +174,34 @@ class Agent(threading.Thread):
                                     self.send_message(Message(TypeMessage.BLOCKED, self.set_event), neighbor_to_move)
                                     self.event.wait()
                                     if self.grid.is_free(position_desiree[0], position_desiree[1]): # On entre ici si l'agent à qui on a fait une demande s'est déplacé
-                                        print(f"L'{neighbor_to_move.name} a bien voulu se déplacer, je peux bouger vers la case {position_desiree}")
+                                        print(f"{self.name} : {neighbor_to_move.name} s'est déplacé, je peux bouger vers la case {position_desiree}")
                                         arret = False
                                         dx=position_desiree[0]-self.position[0]
                                         dy=position_desiree[1]-self.position[1]
                                         self.move(dx, dy)
-                                    # break
-                                    # projet de marde
-                                # for neighbor in neighbors: # Etudie tous les voisins
-                                #     agent_voisin = self.grid.get_agent(neighbor[0], neighbor[1])
-                                #     if neighbor != message.sender.position: # On vérifie que l'on essaye pas de se déplacer là où l'agent bloqué est
-                                #         print(f"On essaie la case voisine à la position : {neighbor}")
-                                #         self.send_message(Message(TypeMessage.BLOCKED, self.set_event), agent_voisin)
-                                #         self.event.wait() # Attend la réponse de l'agent qui nous bloque
-                                #         if self.grid.is_free(neighbor[0], neighbor[1]): # On entre ici si l'agent à qui on a fait une demande s'est déplacé
-                                #             print(f"L'{agent_voisin.name} a bien voulu se déplacer, je peux bouger vers la case {neighbor}")
-                                #             arret = False
-                                #             if self.is_goal():
-                                #                 print(f"{self.name} est à sa position objectif mais bouge d'une case.")
-                                #                 self.steppedAway=True
-                                #             dx=neighbor[0]-self.position[0]
-                                #             dy=neighbor[1]-self.position[1]
-                                #             self.move(dx, dy)
-                                #             break
                                 if arret:
                                     # Aucune des cases voisines n'est exploitable, on ne peut pas se déplacer...        
                                     print("Aucune des cases voisines n'est exploitable, on ne peut pas se déplacer...")
-                                    
-                                    #print("Jeux infinissable !\n Arret du jeux imminent !")
-                                    #self.grid.stop()
                                     self.isBlock=True
                                     message.response(True)
                                 else :
                                     message.response(False) 
                             else:
                                 message.response(False)
-                        # si l'agent est déjà à son goal => ne pas bouger // sinon bouger 
-                    
-                    # réponse si tu es blocké
-                    """
-                    if (message.message_type == TypeMessage.PASGENTIL): # recalcule du chemin
-                        print(self.name + ": Sorry :)")
-
-                    if (message.message_type == TypeMessage.GENTIL): # relance resolve_agent
-                        print(self.name + ": ")
-                    """
                 except queue.Empty:
                     break
-
-            # print(f"{self.name} : boucle update")
-            
             time.sleep(1)# évite de surcharger le cpu !
             if (self.stopped):
                 break
 
-    # def run_1(self):#ancienne fonction run
-    #     while True:
-    #         while True: 
-    #             try:
-    #                 message = self.ma_queue.get(False)  # La thread attend de recevoir un message
-                    
-    #                 if (message.message_type == TypeMessage.BLOCKED): # si tu es un agent qui block 
-                        
-    #                     print(f"{self.name} : {message.sender.name} est bloqué, je vais lui répondre")
-    #                     #message.response(bool(random.getrandbits(1)))# vrai code
-    #                     if self.is_goal():
-    #                         print(f"{self.name} : Position finale atteinte, j'essaye de me décaler d'une case") #TODO : Faire en sorte de s'éloigner d'une case de la position finale
-    #                         # Vérifier s'il est possible de se décaler d'une case
-    #                         # Si une case est libre -> se déplace
-    #                         # Si non -> demande à un voisin de se déplacer
-    #                         # Ajout de l'agent à la liste de ceux qui se sont déplacer et devront refaire le chemin vers leur objectif
-    #                         self.steppedAway=True # Je suis blocké 
-    #                         message.response(True) 
-    #                     else:
-    #                         print(f"{self.name} : peut bouger")
-    #                         neighbors = self.get_neighbors()
-    #                         print(f"{self.name} : mes voisins : {neighbors} ")
-    #                         libre = False # aucune case voisin libre de trouvée
-    #                         for neighbor in neighbors:
-    #                             if self.grid.is_free(neighbor[0], neighbor[1]):
-    #                                 libre = True # trouvée une case voisin libre
-    #                                 print(f"{self.name} : case voisine libre en ", neighbor)
-    #                                 dx=neighbor[0]-self.position[0]
-    #                                 dy=neighbor[1]-self.position[1]
-    #                                 self.move(dx, dy)
-    #                                 break
-    #                         if not libre:
-    #                             arret = True
-    #                             print(f"Toutes les cases voisines de l'{self.name} sont occupées...")
-    #                             # Envoie un message à un voisin pour qu'il se déplace
-    #                             for neighbor in neighbors: # Etudie tous les voisins
-    #                                 if neighbor != message.sender.position: # On vérifie que l'on essaye pas de se déplacer là où l'agent bloqué est
-    #                                     print(f"On essaie la case voisine à la position : {neighbor}")
-    #                                     agent_voisin = self.grid.get_agent(neighbor[0], neighbor[1])
-    #                                     self.send_message(Message(TypeMessage.BLOCKED, self.set_event), agent_voisin)
-    #                                     self.event.wait() # Attend la réponse de l'agent qui nous bloque
-    #                                     if self.grid.is_free(neighbor[0], neighbor[1]): # On entre ici si l'agent à qui on a fait une demande s'est déplacé
-    #                                         print(f"L'{agent_voisin} a bien voulu se déplacer, je peux bouger vers la case {neighbor}")
-    #                                         arret = False
-    #                                         dx=neighbor[0]-self.position[0]
-    #                                         dy=neighbor[1]-self.position[1]
-    #                                         self.move(dx, dy)
-    #                                         break
-    #                             if arret:
-    #                                 # Aucune des cases voisines n'est exploitable, on ne peut pas se déplacer...        
-    #                                 print("Aucune des cases voisines n'est exploitable, on ne peut pas se déplacer...")
-    #                                 print("Jeux infinissable !\n Arret du jeux imminent !")
-    #                                 self.grid.stop()
-    #                             else :
-    #                                 message.response(False) 
-    #                         else:
-    #                             message.response(False)
-    #                     # si l'agent est déjà à son goal => ne pas bouger // sinon bouger 
-                    
-    #                 # réponse si tu es blocké
-    #                 """
-    #                 if (message.message_type == TypeMessage.PASGENTIL): # recalcule du chemin
-    #                     print(self.name + ": Sorry :)")
-
-    #                 if (message.message_type == TypeMessage.GENTIL): # relance resolve_agent
-    #                     print(self.name + ": ")
-    #                 """
-    #             except queue.Empty:
-    #                 break
-
-    #         # print(f"{self.name} : boucle update")
-            
-    #         time.sleep(1)# évite de surcharger le cpu !
-    #         if (self.stopped):
-    #             break
-    
     def set_event(self, neighbor, value):
-        print(f"{self.name} : value retourné {value}")
         self.event.set()
 
 
     def callback_blocked(self, sender, value):
-        print(f"{self.name} : value retourné {value}")
         self.resolve_agent()
         if self.is_goal():
-            # On remet les agents déplacés dans leurs objectifs :windowjump:
+            # On remet les agents déplacés dans leurs objectifs
             for agent in self.grid.agents:
                 if agent.isBlock:
                     agent.isBlock = False
@@ -329,9 +212,9 @@ class Agent(threading.Thread):
             self.event.set()
     
     def resolve_agent(self):
-        print("\nResolve agent", self.name)
+        print("\nResolve", self.name)
         best_path=self.best_path(self.grid)
-        print("-> Son meilleur chemin :", best_path)
+        print("Meilleur chemin :", best_path)
         if best_path == -1:
             print("La position finale n'est pas accessible, arrêt prématuré du jeu")
             self.grid.stop()
@@ -341,10 +224,9 @@ class Agent(threading.Thread):
                 dy = case[1]-self.position[1]
                 ret=self.move(dx, dy)
                 if ret == -1:
-                    print("Sortie de resolve agent par erreur -1")
                     break
                 if ret == -2:
-                    print("Erreur mouvement impossible !!!")
+                    print("Mouvement impossible")
                     break
             
             

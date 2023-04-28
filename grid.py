@@ -32,7 +32,7 @@ class Grid:
             self.agents.append(agent)
             agent.grid = self
             agent.start = {}
-            print(f"Agent {agent.name} a été rajouter à la grille {self.name}\n  Position de départ : {agent.position}\n  Position d'arrivée : {agent.goal}")
+            print(f"Agent {agent.name} a été ajouté à la grille {self.name}\n  Position de départ : {agent.position}\n  Position d'arrivée : {agent.goal}")
         else:
             raise ValueError(f"Position invalide pour {agent.name}")
     
@@ -53,13 +53,8 @@ class Grid:
     def is_free(self, x, y):
         return self.get_agent(x, y) is None
     
-    # def update(self, agent, old_position):
-    #     print(f"{agent.name} à été update dans la grille")
-    #     del self.agents[old_position]
-    #     self.agents[agent.position] = agent
-    
     def broadcast_message(self, sender, message, receiver):
-        print(f"Broadcast d'un message:\n sender={sender.name} \n receiver={receiver.name}")
+        print(f"-- Broadcast d'un message de {sender.name} vers {receiver.name}")
         message.sender = sender
         message.receiver = receiver
         receiver.receive_message(message)
@@ -99,7 +94,6 @@ class Grid:
     def compute_agent_in_goal(self, path):
         cpt=0
         for case in path:
-            # if not self.is_free(case[0], case[1]):
             potential_agent = self.get_agent(case[0], case[1])
             if potential_agent != None:
                 cpt+=1
@@ -151,8 +145,7 @@ class Grid:
         return shortest_payhs
     
     def resolve_grid(self):
-        # résolutionligne par ligne
-        print("\n1er Etape : Résolution ligne par ligne\n")
+        # résolution ligne par ligne
         for i in range(self.height-2):
             for agent in self.agents:
                 agents_steppedAway=[]
@@ -163,8 +156,7 @@ class Grid:
                     if (not agent.is_goal()) or (True in agents_steppedAway):
                         agent.event.wait()
 
-        # résolution colomne par colomne 
-        print("\n2eme Etape : Résolution colomne par colomne\n")
+        # résolution colonne par colonne 
         for i in range(self.width):
             for agent in self.agents:
                 agents_steppedAway=[]
@@ -174,7 +166,7 @@ class Grid:
                     if (not agent.is_goal()) or (True in agents_steppedAway):
                         agent.event.wait()
                     
-        print("\nFin du tacquin ! Tous les agents sont placé !\n")
+        print("\nFin du tacquin ! Tous les agents sont placés !\n")
 
 
                 
