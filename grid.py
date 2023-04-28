@@ -92,6 +92,8 @@ class Grid:
             if type(element) == list:
                 completed_paths.append(element)
 
+        completed_paths.sort(key=len)
+
         return completed_paths
     
     def compute_agent_in_goal(self, path):
@@ -99,8 +101,10 @@ class Grid:
         for case in path:
             # if not self.is_free(case[0], case[1]):
             potential_agent = self.get_agent(case[0], case[1])
-            if potential_agent != None and potential_agent.is_goal():
+            if potential_agent != None:
                 cpt+=1
+                if potential_agent.is_goal():
+                    cpt+=1
         return cpt
                 
     def find_shortest_paths(self, start, end, path=[]):
@@ -124,10 +128,10 @@ class Grid:
                 if (self.is_free(next_x, next_y)) : # get_agent marche seulement s'il y a un agent !!!
                     new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
                     paths.extend(new_path)
-                elif self.get_agent(next_x, next_y) != None:
-                    if not self.get_agent(next_x, next_y).steppedAway:
-                        new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
-                        paths.extend(new_path)
+                elif self.get_agent(next_x, next_y) != None and not self.get_agent(next_x, next_y).isBlock:
+                    #if not self.get_agent(next_x, next_y).steppedAway:
+                    new_path = self.find_shortest_paths((next_x, next_y), end, path+[start])
+                    paths.extend(new_path)
 
                 
         completed_paths = []
@@ -151,20 +155,25 @@ class Grid:
         print("\n1er Etape : Résolution ligne par ligne\n")
         for i in range(self.height-2):
             for agent in self.agents:
+                agents_steppedAway=[]
                 if agent.goal[1]==i and not agent.is_goal():
                     agent.resolve_agent()
                     #print("avant le wait !")
-                    if not agent.is_goal():
+                    agents_steppedAway = [agent.steppedAway for agent in self.agents]
+                    if (not agent.is_goal()) or (True in agents_steppedAway):
                         agent.event.wait()
 
         # résolution colomne par colomne 
         print("\n2eme Etape : Résolution colomne par colomne\n")
         for i in range(self.width):
             for agent in self.agents:
+                agents_steppedAway=[]
                 if agent.goal[0]==i and not agent.is_goal():
                     agent.resolve_agent()
-                    if not agent.is_goal():
+                    agents_steppedAway = [agent.steppedAway for agent in self.agents]
+                    if (not agent.is_goal()) or (True in agents_steppedAway):
                         agent.event.wait()
+                    
         print("\nFin du tacquin ! Tous les agents sont placé !\n")
 
 

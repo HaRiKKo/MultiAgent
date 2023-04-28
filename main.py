@@ -14,7 +14,7 @@ import random
 
 grid = Grid(5, 5)
 #coordonnée : (colonne, ligne)
-nb_agents = 15 #max trouver
+nb_agents = 10 #max trouver
 grid.init_grid(nb_agents)
 
 
