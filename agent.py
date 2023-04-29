@@ -59,6 +59,7 @@ class Agent(threading.Thread):
         
                     
     def move(self, dx, dy):
+        time.sleep(1)
         new_x = self.position[0] + dx
         new_y = self.position[1] + dy
         
@@ -208,7 +209,7 @@ class Agent(threading.Thread):
                 if agent.steppedAway:
                     print(f"{agent.name} est remis sur le droit chemin après avoir été déplacé")
                     agent.resolve_agent()
-            time.sleep(1)
+            time.sleep(3)
             self.event.set()
     
     def resolve_agent(self):

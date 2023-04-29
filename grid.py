@@ -19,7 +19,7 @@ class Grid:
                 agent = Agent("Agent "+str(num_agent+1), position_desiree, self.position_finale(num_agent), self)
                 self.add_agent(agent)
                 num_agent += 1
-            if num_agent >= nb_agents or num_agent >= self.height*self.width:
+            if num_agent >= nb_agents or num_agent >= self.height*self.width-1:
                 init=False
 
     def position_finale(self, num_agent):
@@ -148,25 +148,20 @@ class Grid:
         # résolution ligne par ligne
         for i in range(self.height-2):
             for agent in self.agents:
-                agents_steppedAway=[]
                 if agent.goal[1]==i and not agent.is_goal():
                     agent.resolve_agent()
-                    #print("avant le wait !")
-                    agents_steppedAway = [agent.steppedAway for agent in self.agents]
-                    if (not agent.is_goal()) or (True in agents_steppedAway):
+                    if (not agent.is_goal()):
                         agent.event.wait()
 
         # résolution colonne par colonne 
         for i in range(self.width):
             for agent in self.agents:
-                agents_steppedAway=[]
                 if agent.goal[0]==i and not agent.is_goal():
                     agent.resolve_agent()
-                    agents_steppedAway = [agent.steppedAway for agent in self.agents]
-                    if (not agent.is_goal()) or (True in agents_steppedAway):
+                    if (not agent.is_goal()):
                         agent.event.wait()
                     
-        print("\nFin du tacquin ! Tous les agents sont placés !\n")
+        print("\nFin du taquin ! Tous les agents sont placés !\n")
 
 
                 

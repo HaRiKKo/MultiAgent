@@ -14,5 +14,3 @@ class Message:
 
 class TypeMessage(Enum):
     BLOCKED = 1
-    PASGENTIL = 2
-    GENTIL = 3
