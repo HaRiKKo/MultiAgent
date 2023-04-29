@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class Message:
     def __init__(self, message_type, callback):
         self.message_type = message_type

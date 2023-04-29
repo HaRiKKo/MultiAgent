@@ -7,7 +7,7 @@ import tkinter as tk
 
 NB_AGENTS = 5
 n = 3
-grid = Grid(n, n)
+grid = Grid(n,n)
 
 grid.init_grid(NB_AGENTS)
 
@@ -35,7 +35,7 @@ def interface():
         cercle.place(x=x + 15, y=y + 15)
 
     def update_grille():
-        fond_bleu = tk.Canvas(fenetre, width=(n)*distance, height=(n)*distance, bg="red")
+        fond_bleu = tk.Canvas(fenetre, width=(n)*distance, height=(n)*distance, bg="white")
         fond_bleu.place(x=0, y=0)
         for i in range(n):
             fond_bleu.create_line(0, i*distance, (n+1)*distance, i*distance, width=3)
