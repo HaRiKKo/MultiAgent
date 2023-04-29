@@ -5,9 +5,9 @@ import random
 import threading
 import tkinter as tk
 
-NB_AGENTS = 10
-
-grid = Grid(5, 5)
+NB_AGENTS = 5
+n = 3
+grid = Grid(n, n)
 
 grid.init_grid(NB_AGENTS)
 
@@ -15,9 +15,6 @@ def interface():
         # Création de la fenêtre
     fenetre = tk.Tk()
     fenetre.geometry("1000x1000")
-
-    # Nombre de cercles à afficher
-    n = 5
 
     # Taille des cercles
     rayon = 70
@@ -29,18 +26,21 @@ def interface():
     def print_cercle(agent):
         i = agent.position[0]
         j = agent.position[1]
-        x = distance * (i + 1)
-        y = distance * (j + 1)
+        x = distance * (i )
+        y = distance * (j)
         cercle = tk.Canvas(fenetre, width=rayon, height=rayon)
         cercle.create_oval(0, 0, rayon, rayon, fill="blue")
-        
         cercle.create_text(rayon//2, rayon//2, text=agent.name)
         
-        cercle.place(x=x, y=y)
+        cercle.place(x=x + 15, y=y + 15)
 
     def update_grille():
-        fond_bleu = tk.Canvas(fenetre, width=(n+1)*distance, height=(n+1)*distance, bg="red")
+        fond_bleu = tk.Canvas(fenetre, width=(n)*distance, height=(n)*distance, bg="red")
         fond_bleu.place(x=0, y=0)
+        for i in range(n):
+            fond_bleu.create_line(0, i*distance, (n+1)*distance, i*distance, width=3)
+        for i in range(n):
+            fond_bleu.create_line(i*distance, (n+1)*distance, i*distance, 0, width=3)
         for agent in grid.agents:
             print_cercle(agent)
 

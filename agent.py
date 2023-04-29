@@ -209,7 +209,7 @@ class Agent(threading.Thread):
                 if agent.steppedAway:
                     print(f"{agent.name} est remis sur le droit chemin après avoir été déplacé")
                     agent.resolve_agent()
-            time.sleep(3)
+            time.sleep(1)
             self.event.set()
     
     def resolve_agent(self):
